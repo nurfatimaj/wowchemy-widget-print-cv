@@ -1,0 +1,19 @@
+{{- $home := site.GetPage "/home" -}}
+{{- $skills_page := $home.Resources.Match "skills.md" -}}
+
+{{ range $skills_page -}}
+  \section{ {{- .Title -}} }
+  {{- $group_names := .Params.skill_groups -}}
+  {{- $skills_set := "" -}}
+  {{ if .Params.feature -}}{{- $skills_set = .Params.feature -}}{{- end -}}
+  \begin{itemize}[leftmargin=0.15in, label = {}]
+    {{- range $idx, $key := $group_names -}}
+      {{- $query := where $skills_set "group" $idx -}}
+      {{- $skills_in_group := slice -}}
+      {{- range $query -}}
+        {{- with .name -}}{{- $skills_in_group = $skills_in_group | append . -}}{{- end -}}
+      {{- end }}
+      \item \small{ \textbf{ {{- $key -}} }: {{ delimit $skills_in_group (site.Params.list_delimiter | default ", ") -}} }
+    {{- end }}
+  \end{itemize}
+{{- end }}
