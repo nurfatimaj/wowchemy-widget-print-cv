@@ -1,0 +1,30 @@
+{{- $home := site.GetPage "/home" -}}
+{{- $publications_page := $home.Resources.Match "publications.md" -}}
+{{- $publications_count := 65535 -}}
+
+{{- range $publications_page -}}
+  \section*{ {{- .Title -}} }
+  {{- $publications_sort := .Params.content.order | default "desc" -}}
+  {{- range $idx, $key := site.Data.publication_types.types -}}
+    {{/* Query */}}
+    {{- $query := where site.RegularPages "Type" "publication" -}}
+    {{- $archive_page := site.GetPage "Section" "publication" -}}
+    {{- $filter := string $idx -}}
+    {{- $archive_page = site.GetPage (printf "publication_types/%s" $filter ) -}}
+    {{- $query = $query | intersect $archive_page.Pages -}}
+    {{- $count := len $query -}}
+    {{/* Sort */}}
+    {{- $sort_by := "Date" -}}
+    {{- $query = sort $query $sort_by $publications_sort -}}
+    {{/* Offset and Limit */}}
+    {{- $query = first $publications_count $query -}}
+    {{- if gt $count 0 -}}
+      \subsection{ {{- i18n $key | markdownify -}} }
+        \resumeSubHeadingListStart
+        {{- range $post := $query -}}
+          {{- partial "li_citation_print" . -}}
+        {{- end -}}
+        \resumeSubHeadingListEnd
+    {{- end -}}
+  {{- end -}}
+{{- end }}
