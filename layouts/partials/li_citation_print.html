@@ -1,0 +1,5 @@
+    \resumePublicationHeading
+      { \textbf{ {{- .Title -}} }{{ partial "page_metadata_authors_print" . }} }
+      { {{- if .Date -}}{{- .Date.Format "2006" -}}{{- end -}} }
+      { {{- if .Params.publication -}}{{- .Params.publication | markdownify -}}{{- end -}} }
+      {{- if .Params.abstract_display -}}{{- .Params.abstract | markdownify -}}{{- end -}}
