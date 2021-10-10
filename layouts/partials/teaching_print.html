@@ -1,0 +1,25 @@
+{{- $home := site.GetPage "/home" -}}
+{{- $teaching_page := $home.Resources.Match "teaching.md" -}}
+
+{{- range $teaching_page -}}
+  {{- $date_format := .Params.date_format -}}
+  \section{ {{- .Title -}} }
+  {{ if .Params.experience -}}
+    \resumeSubHeadingListStart
+      {{- range $idx, $key := sort .Params.experience ".date_start" "desc" -}}
+        {{- $start := (time .date_start).Format ($date_format | default "Jan 2006") -}}
+        {{- $end := (i18n "present" | default "Present") -}}
+        {{- $length := 1 -}}
+        {{- if .date_end -}}
+          {{- $end = (time .date_end).Format ($date_format | default "Jan 2006") -}}
+          {{- if eq $date_format "2006" -}}{{- $length = sub (float $end) (float $start) -}}{{- end -}}
+        {{- end }}
+        \resumeSubheading
+          { {{- .title | markdownify | emojify -}} }
+          { {{- $start -}}{{- if gt $length 0 -}} - {{- $end -}}{{- end -}} }
+          { {{- with .description -}} {{- . | markdownify | emojify -}}{{- end -}} }
+          { {{ with .company_url -}}\href{ {{- . -}} }{{- end -}}{ {{- .company | markdownify | emojify -}} } }
+      {{- end }}
+    \resumeSubHeadingListEnd
+  {{- end -}}
+{{ end }}
