@@ -1,0 +1,24 @@
+{{- $home := site.GetPage "/home" -}}
+{{- $seminars_page := $home.Resources.Match "seminars.md" -}}
+
+{{ range $seminars_page -}}
+  {{- $date_format := .Params.date_format -}}
+  \section*{ {{- .Title -}} }
+  {{ if .Params.item -}}
+    \resumeSubHeadingListStart
+      {{- range $idx, $key := sort .Params.item ".date_start" "desc" -}}
+        {{- $start := (time .date_start).Format ($date_format | default "Jan 2006") -}}
+        {{- $end := (i18n "present" | default "Present") -}}
+        {{- $length := 1 -}}
+        {{- if .date_end -}}
+          {{- $end = (time .date_end).Format ($date_format | default "Jan 2006") -}}
+          {{- if eq $date_format "2006" -}}{{- $length = sub (float $end) (float $start) -}}{{- end -}}
+        {{- end }}
+        \resumeOtherHeading
+          { {{- with .url -}}\href{ {{- . -}} }{{- end -}} { {{- .title | markdownify | emojify -}} } at {{ with .organization_url -}}\href{ {{- . -}} }{{- end -}}{ {{- .organization | markdownify | emojify -}} } }
+          { {{ $start -}}{{- if gt $length 0 -}} - {{- $end -}}{{- end }} }
+          {{- with .description -}}{{- . | markdownify | emojify -}}{{- end -}}
+      {{- end }}
+    \resumeSubHeadingListEnd  
+  {{- end -}}
+{{- end }}
