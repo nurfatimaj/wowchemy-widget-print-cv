@@ -1,6 +1,190 @@
-{{ $page := .root }}
-{{ $section := .page }}
+{{ $ := .root }}
+{{ $page := .page }}
 
-<h2>{{$section.Title}}</h2>
+{{ $author := "" }}
+{{ if .author }}
+  {{ $author = .author }}
+{{ else }}
+  {{ $author = $page.Params.author }}
+{{end}}
 
-<p>{{$section.Content}}</p>
+{{ $person_page_path := (printf "/authors/%s" (urlize $author)) }}
+{{ $person_page := site.GetPage $person_page_path }}
+{{ if not $person_page }}
+  {{ errorf "Could not find an author page at `%s`. Please check the value of `author` in your About widget and create an associated author page if one does not already exist. See https://sourcethemes.com/academic/docs/page-builder/#about " $person_page_path }}
+{{end}}
+{{ $person := $person_page.Params }}
+{{ $avatar := ($person_page.Resources.ByType "image").GetMatch "*avatar*" }}
+{{ $data := site.Params }}
+{{ $autolink := default true $page.Params.autolink }}
+
+<pre>
+  <code>
+    \documentclass[a4, 11pt]{article}
+
+    \usepackage{latexsym}
+    \usepackage[empty]{fullpage}
+    \usepackage{titlesec}
+    \usepackage{marvosym}
+    \usepackage[usenames,dvipsnames]{color}
+    \usepackage{verbatim}
+    \usepackage{enumitem}
+    \usepackage[hidelinks]{hyperref}
+    \usepackage{fancyhdr}
+    \usepackage[margin=1in]{geometry}
+    \usepackage{float}
+    \usepackage{array}
+    \usepackage{tabularx}
+    \input{glyphtounicode}
+
+    %----HEADER----
+    \pagestyle{fancy}
+    \fancyhf{} % clear all header and footer fields
+    \fancyfoot{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+
+    %----PAGE GEOMETRY----
+    \addtolength{\oddsidemargin}{-0.5in}
+    \addtolength{\evensidemargin}{-0.5in}
+    \addtolength{\textwidth}{1in}
+    \addtolength{\topmargin}{-.5in}
+    \addtolength{\textheight}{1.0in}
+
+    \raggedbottom
+    \raggedright
+
+    %----SECTIONS----
+    \titleformat{\section}{\vspace{-4pt}\scshape\raggedright\large}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+    \titleformat{\subsection}{\vspace{-4pt}\itshape\raggedright\large}{}{0em}{}[\color{black} \vspace{-5pt}]
+
+    \newcommand{\resumeItem}[1]{
+      \item\small{
+        {#1 \vspace{-2pt}}
+      }
+    }
+
+    \newcommand{\resumeSubheading}[4]{
+      \vspace{-2pt}\item
+        \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+          \textbf{#1} & #2 \\
+          \textit{\small#3} & \textit{\small #4} \\
+        \end{tabular*}
+    }
+
+    \newcommand{\resumeSubSubheading}[2]{
+        \item
+        \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+          \textit{\small#1} & \textit{\small #2} \\
+        \end{tabular*}\vspace{-7pt}
+    }
+
+    \newcommand{\resumePublicationHeading}[3]{
+        \item
+        \begin{tabularx}{0.97\textwidth}{X@{\extracolsep{2em}}r}
+          #1 & #2 \\
+          \multicolumn{2}{l}{\textit{\small#3}}
+        \end{tabularx}
+    }
+
+    \newcommand{\resumeOtherHeading}[2]{
+      \item
+      \begin{tabularx}{0.97\textwidth}{X@{\extracolsep{2em}}r}
+        #1 & #2
+      \end{tabularx}
+    }
+
+    \newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+
+    \renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+    \newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+    \newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+    \newcommand{\resumeItemListStart}{\begin{itemize}}
+    \newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+    %----MISCELLANEOUS----
+    \urlstyle{same}
+    \setlength{\tabcolsep}{0in}
+
+    % Ensure that generate pdf is machine readable/ATS parsable
+    \pdfgentounicode=1
+
+    \begin{document}
+
+    \begin{center}
+        \textbf{\Huge \scshape {{ $person.title -}}} \\ \vspace{1pt}
+    \end{center}
+
+    % About and contact information
+
+    \section*{Contact Information}
+    \begin{table}[H]
+      \begin{tabular}{>{\raggedright\arraybackslash}p{0.5\linewidth}>{\raggedleft\arraybackslash}p{0.5\linewidth}}
+        {{- with $data.phone -}} Phone: {{ . }}{{- end }} [:tab:]
+        {{- range first 1 $person.organizations -}}
+           {{- with .url -}}\href{ {{- . -}} }{{- end -}}{ {{- .name -}} }
+        {{- end -}}\\
+        {{- $addr_formatted1 := "" -}}
+        {{- $addr_formatted2 := "" -}}
+        {{- $baseUrl := site.BaseURL -}}
+        {{- if $data.address.street | or $data.address.city | or $data.address.region | or $data.address.postcode | or $data.address.country -}}
+          {{- $addr1 := slice -}}
+          {{- $addr2 := slice -}}
+          {{- with $data.address.street -}}{{- $addr1 = $addr1 | append . -}}{{- end -}}
+          {{- with $data.address.city -}}{{- $addr1 = $addr1 | append . -}}{{- end -}}
+          {{- with $data.address.region -}}{{- $addr2 = $addr2 | append . -}}{{- end -}}
+          {{- with $data.address.postcode -}}{{- $addr2 = $addr2 | append . -}}{{- end -}}
+          {{- with $data.address.country -}}{{- $addr2 = $addr2 | append . -}}{{- end -}}
+          {{- $addr_formatted1 = delimit $addr1 (site.Params.list_delimiter | default ", ") -}}
+          {{- $addr_formatted2 = delimit $addr2 (site.Params.list_delimiter | default ", ") -}}
+        {{- end }}
+        {{- with $data.email }}
+          Email: {{ if $autolink -}}\href{mailto:{{ $data.email}}}{{- end -}}{ {{- . -}} }
+        {{- end }}
+        [:tab:] {{ $addr_formatted1 -}} \\
+        Personal page: {{ if $autolink -}}\href{ {{- $baseUrl -}} }{{- end -}}{ {{- $baseUrl -}} } [:tab:] {{ $addr_formatted2 -}} \\
+        Skype name: \href{skype:{{- $data.skype_name -}}?call}{ {{- $data.skype_name -}} } [:tab:]
+      \end{tabular}
+    \end{table}
+
+    \section{Research interests}
+    {{- $interests := delimit $person.interests (site.Params.list_delimiter | default ", ") -}}
+    {{- $interests }}
+
+    % Education
+    \section{ {{- i18n "education" | markdownify -}} }
+    {{- with $person.education -}}
+      \resumeSubHeadingListStart
+        {{- range .courses }}
+          \resumeSubheading
+            { {{- with .institution_url -}} \href{ {{- . -}} }{{- end -}}{ {{- .institution | markdownify | emojify -}} } }
+            {}
+            { {{- .course | markdownify | emojify -}} }
+            { {{ with .year }}{{ . }}{{ end }} }
+            {{- with .description }}{{ . | markdownify | emojify }}{{- end }}
+        {{- end }}
+      \resumeSubHeadingListEnd
+    {{- end }}
+
+    % Experience
+    {{ partial "widgets/experience_print" . }}
+
+    % Teaching
+    {{ partial "widgets/teaching_print" . }}
+
+    % Publications
+    {{ partial "widgets/publications_print" . }}
+
+    % Seminars and conferences
+    {{ partial "widgets/seminars_print" . }}
+
+    % Skills
+    {{ partial "widgets/skills_print" . }}
+
+    % Awards and Grants
+    {{ partial "widgets/awards_print" . }}
+
+    \end{document}
+  </code>
+</pre>
