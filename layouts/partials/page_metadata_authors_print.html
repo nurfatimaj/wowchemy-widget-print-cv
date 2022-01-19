@@ -11,7 +11,7 @@
       {{- $name := .Params.title | default ($value|markdownify) -}}
       
       {{- if and (gt $index 0) (lt $index (sub $num_authors 1)) -}}, {{- else if and (gt $index 0) (eq $index (sub $num_authors 1)) -}}and {{ end -}}
-      {{- $name -}}
+      {{ $name -}}
     {{ end }}
   {{- end -}}
 {{- end -}}
