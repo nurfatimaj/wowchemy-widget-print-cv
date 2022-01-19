@@ -1,29 +1,17 @@
-{{- /* Display author list. */ -}}
-{{- $taxonomy := "authors" -}}
+{{/* Display author list. */}}
 
-{{- with .Param $taxonomy -}}
-  {{- $link_authors := site.Params.link_authors | default true -}}
-  {{- $num_authors := len . -}}
-  {{- if gt $num_authors 1 }} with {{ end -}}
-  {{- range $index, $value := . -}}
-    {{- if ne $value "admin" -}}
-      {{- $profile_page := site.GetPage (printf "/%s/%s" $taxonomy (. | urlize)) -}}
-      {{- $link_this_author := $profile_page.Params.link_this_author -}}
-      {{- $link := "" -}}
-      {{- $target := "" -}}
-      {{- if $profile_page.Params.link -}}
-        {{- $link = $profile_page.Params.link -}}
-        {{- $target = "target=\"_blank\" rel=\"noopener\"" -}}
-      {{- end -}}
-      {{- $name := $profile_page.Params.title | default ($value|markdownify) -}}
-      {{- if and (gt $index 1) (lt $index (sub $num_authors 1)) }},
-      {{ else if and (gt $index 1) (eq $index (sub $num_authors 1)) }} and 
-      {{ end -}}
-      {{- if and $profile_page $link_authors $link_this_author $link -}}
-        \href{ {{- $link -}} }{ {{- $name -}} }
-      {{- else -}}
-        {{- $name -}}
-      {{- end -}}
-    {{- end -}}
+{{- $taxonomy := "authors" }}
+{{ if .Param $taxonomy }}
+  {{- /* Co-authors? */ -}}
+  {{- $num_authors := len (.GetTerms $taxonomy) -}}
+  {{- if gt $num_authors 0 }} with {{ end -}}
+
+  {{ range $index, $value := (.GetTerms $taxonomy) }}
+    {{- if ne .Params.authors "admin" -}}
+      {{- $name := .Params.title | default ($value|markdownify) -}}
+      
+      {{- if and (gt $index 0) (lt $index (sub $num_authors 1)) -}}, {{- else if and (gt $index 0) (eq $index (sub $num_authors 1)) -}}and {{ end -}}
+      {{- $name -}}
+    {{ end }}
   {{- end -}}
 {{- end -}}
